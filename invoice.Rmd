@@ -1,0 +1,141 @@
+---
+output:
+  pdf_document:
+header-includes:
+  - \usepackage{changepage, multicol, tabularx, tgheros}
+  - \renewcommand{\familydefault}{\sfdefault}
+  - \pagenumbering{gobble}
+params:
+  to: ""
+  paid: 0
+  input_table: !r data.frame("", 0, "", 0)
+  invoice_no:  !r as.integer(Sys.time())
+  date:        !r Sys.Date()
+  company:     !r Sys.getenv("COMPANY")
+  abn:         !r Sys.getenv("ABN")
+  addr1:       !r Sys.getenv("ADDR1")
+  addr2:       !r Sys.getenv("ADDR2")
+  email:       !r Sys.getenv("EMAIL")
+  acc_name:    !r Sys.getenv("ACC_NAME")
+  bsb:         !r Sys.getenv("BSB")
+  acc_no:      !r Sys.getenv("ACC_NO")
+  terms:       !r Sys.getenv("TERMS")
+---
+
+\vspace{20pt}
+
+```{r setup, echo = FALSE, message = FALSE}
+library(knitr)
+library(xtable)
+
+opts_chunk$set(echo = FALSE, results = "asis")
+
+dollar   = function(x) paste0("$", format(x, nsmall = 2))
+san_col  = function(x) paste("\\bfseries", gsub("_", " ", x))
+san_row  = function(x) sprintf("\\textbf{%s}", x)
+```
+
+\textbf{`r params$company` \hfill Tax Invoice}
+==============================================
+
+`r params$addr1` \hspace{10em} A.B.N. `r params$abn`
+
+`r params$addr2`
+
+email: `r params$email`
+
+\vspace{20pt}
+
+\begin{multicols}{2}
+
+{\large\bfseries To:}
+
+`r paste(params$to, collapse = "\n")`
+
+\columnbreak
+
+\begin{flushright}
+\begin{tabular}{>{\bfseries}lr}
+Invoice No: & `r params$invoice_no` \\
+Date:       & `r params$date`
+\end{tabular}
+\end{flushright}
+
+\end{multicols}
+
+\vspace{30pt}
+
+\begin{adjustwidth}{-\tabcolsep}{\tabcolsep}
+
+```{r input_table}
+input_table            = params$input_table
+colnames(input_table)  = c("Date", "Hours", "Service", "Ex_Rate")
+input_table$Ex_Total   = input_table[, "Hours"] * input_table[, "Ex_Rate"]
+
+input_table_x          = input_table
+input_table_x$Hours    = format(input_table_x$Hours, nsmall = 1)
+input_table_x$Ex_Rate  = dollar(input_table_x$Ex_Rate)
+input_table_x$Ex_Total = dollar(input_table_x$Ex_Total)
+input_table_x          = xtable(input_table_x)
+align(input_table_x)   = "lllXll"
+
+print(input_table_x,
+      hline.after                = NULL,
+      sanitize.colnames.function = san_col,
+      include.rownames           = FALSE,
+      floating                   = FALSE,
+      floating.environment       = NULL,
+      table.placement            = NULL,
+      comment                    = FALSE,
+      tabular.environment        = "tabularx",
+      width                      = "\\textwidth"
+)
+```
+
+\end{adjustwidth}
+\vfill
+
+Payment may be made by Electronic Funds Transfer to:
+\begin{adjustwidth}{-\tabcolsep}{\tabcolsep}
+\begin{multicols}{2}
+\begin{tabular}{>{\bfseries}lr}
+Name: & `r params$acc_name`\\
+BSB:  & `r params$bsb`\\
+Acc:  & `r params$acc_no`
+\end{tabular}
+
+\hspace{\tabcolsep}\small Terms: `r params$terms`
+
+\columnbreak
+
+\begin{flushright}
+
+```{r output_table}
+subtotal = sum(input_table[, "Ex_Total"])
+gst      = subtotal / 10L
+total    = subtotal + gst
+paid     = params$paid
+
+output_table = rbind("Sub Total:"      = dollar(subtotal),
+                     "GST:"            = dollar(gst),
+                     "Total Inc. GST:" = dollar(total),
+                     "Paid:"           = dollar(paid),
+                     "Balance Due:"    = dollar(total - paid))
+output_table = xtable(output_table)
+align(output_table) = "rr"
+
+print(output_table,
+      floating                   = FALSE,
+      floating.environment       = NULL,
+      table.placement            = NULL,
+      hline.after                = NULL,
+      include.colnames           = FALSE,
+      add.to.row                 = list(pos     = as.list(1:5),
+                                        command = rep("[10pt]", 5)),
+      sanitize.rownames.function = san_row,
+      comment                    = FALSE)
+```
+\end{flushright}
+
+\end{multicols}
+\end{adjustwidth}
