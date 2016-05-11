@@ -1,25 +1,17 @@
 library(rhandsontable)
-
-textAreaInput = function(
-  inputId, label, value = "", placeholder = "", rows = 3) {
-  tagList(
-    div(strong(label), style = "margin-top: 5px;"),
-    tags$style(type = "text/css", "textarea {width:100%; margin-top: 5px;}"),
-    tags$textarea(id = inputId, placeholder = placeholder, rows = rows, value)
-  )
-}
-
-shinyUI(
-  fluidPage(
-    sidebarLayout(
-      sidebarPanel(
-        textAreaInput("to", "To"),
-        rHandsontableOutput("input_table"),
-        numericInput("paid", "Paid", 0, 0, step = 1),
-        downloadButton("downloadInvoice")
+fluidPage(
+  fluidRow(
+    column(
+      width = 4,
+      tagList(
+        div(strong("To"), style = "margin-top:20%;"),
+        tags$style(type = "text/css", "textarea {width:410px}"),
+        tags$textarea(id = "to", placeholder = "", rows = 3, "")
       ),
-      mainPanel(
-      )
+      rHandsontableOutput("input_table"),
+      numericInput("paid", "Paid", 0, 0, step = 1, width = "149px"),
+      downloadButton("downloadInvoice", "Generate Invoice"),
+      offset = 4
     )
   )
 )
