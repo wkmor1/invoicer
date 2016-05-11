@@ -9,7 +9,7 @@ RUN    apt-get update \
        texlive \
        texlive-latex-extra
 
-RUN    R -e "install.packages('rmarkdown')"
+RUN    R -e "install.packages(c('rmarkdown', 'rhandsontable'))"
 
 COPY   ui.R        /srv/shiny-server/
 COPY   server.R    /srv/shiny-server/

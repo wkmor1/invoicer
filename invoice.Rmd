@@ -6,10 +6,10 @@ header-includes:
   - \renewcommand{\familydefault}{\sfdefault}
   - \pagenumbering{gobble}
 params:
-  to: ""
-  paid: 0
-  input_table: !r data.frame("", 0, "", 0)
-  invoice_no:  !r as.integer(Sys.time())
+  invoice_no:  0
+  to:          ""
+  paid:        0
+  input_table: !r data.frame(Sys.Date(), 0, "", 0, stringsAsFactors = FALSE)
   date:        !r Sys.Date()
   company:     !r Sys.getenv("COMPANY")
   abn:         !r Sys.getenv("ABN")
@@ -50,7 +50,7 @@ email: `r params$email`
 
 {\large\bfseries To:}
 
-`r paste(params$to, collapse = "\n")`
+`r paste(readLines(textConnection(params$to)), collapse = "\\\\")`
 
 \columnbreak
 
@@ -69,10 +69,10 @@ Date:       & `r params$date`
 
 ```{r input_table}
 input_table            = params$input_table
-colnames(input_table)  = c("Date", "Hours", "Service", "Ex_Rate")
 input_table$Ex_Total   = input_table[, "Hours"] * input_table[, "Ex_Rate"]
 
 input_table_x          = input_table
+input_table_x$Date     = as.character(input_table$Date)
 input_table_x$Hours    = format(input_table_x$Hours, nsmall = 1)
 input_table_x$Ex_Rate  = dollar(input_table_x$Ex_Rate)
 input_table_x$Ex_Total = dollar(input_table_x$Ex_Total)
