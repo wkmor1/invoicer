@@ -116,11 +116,11 @@ gst      = subtotal / 10L
 total    = subtotal + gst
 paid     = params$paid
 
-output_table = rbind("Sub Total:"      = dollar(subtotal),
-                     "GST:"            = dollar(gst),
-                     "Total Inc. GST:" = dollar(total),
-                     "Paid:"           = dollar(paid),
-                     "Balance Due:"    = dollar(total - paid))
+output_table = rbind("Sub Total:"      = dollar(round(subtotal, 2),
+                     "GST:"            = dollar(round(gst, 2)),
+                     "Total Inc. GST:" = dollar(round(total, 2)),
+                     "Paid:"           = dollar(round(paid, 2)),
+                     "Balance Due:"    = dollar(round(total - paid, 2))
 output_table = xtable(output_table)
 align(output_table) = "rr"
 
